@@ -13,6 +13,16 @@ if (backToLoginPage != null) {
     })
 }
 
+window.addEventListener('load', init);
+
+
+
+
+function init() {
+    if (localStorage.getItem('userToken') != 0) {
+        location.href = 'mainPage.html';
+    }
+}
 
 function loginSubmitted() {
     let email = document.querySelector("#email").value;
@@ -58,7 +68,6 @@ function createAccountSubmitted() {
             email: email,
             password: password
         }
-        console.log(user);
         postResponse(user);
 
     }

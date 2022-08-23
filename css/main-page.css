@@ -3,3 +3,15 @@
     margin: 0 auto;
     background-color: white !important;
 }
+
+.profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.username {
+    position: relative;
+    left: 2px;
+    top: 2.5px;
+}
