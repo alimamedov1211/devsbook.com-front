@@ -14,16 +14,13 @@ function signOutBtnClicked() {
 function init() {
     let token = localStorage.getItem('userToken');
     getUser(token);
-    getData();
 }
 
 
 function afterFindUser(userJson) {
     let user = JSON.parse(userJson);
     let name = user.name;
-    let surname = user.surname;
-    let email = user.email;
-    let profilePhoto = JSON.parse(user.profilePhoto);
+    let profilePhoto = user.profilePhoto;
     document.querySelector('#profilePic').src = "data:image/jpeg;base64," + profilePhoto;
     document.querySelector("#username").innerHTML = name;
 

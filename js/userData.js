@@ -1,6 +1,9 @@
 window.addEventListener('load', init);
+let changeProfilePicSaveBtn = document.querySelector('#changeProfilePicSaveBtn')
 
-
+changeProfilePicSaveBtn.addEventListener('click', clicked => {
+    location.reload();
+})
 
 
 function init() {
@@ -9,6 +12,29 @@ function init() {
 }
 
 
+function afterConvertedBase64(base64) {
+    let token = localStorage.getItem('userToken');
+    let changeProfilePicSpan = document.querySelector('#changeProfilePicSpan')
+    document.querySelector('#profilePicInfo').src = base64;
+    changeProfilePicSpan.innerHTML = 'Save Changes';
+    changeProfilePicSaveBtn.classList.remove('d-none');
+    changeProfilePicSaveBtn.classList.add('d-block');
+    document.querySelector('#imageUpload').remove();
+    changeProfilePicSpan.addEventListener('click', clicked => {
+        changeProfilePic(base64.split(',')[1], token);
+    })
+}
+
+imageUpload.addEventListener('change', fileUploaded => {
+    let file = imageUpload.files[0];
+    let reader = new FileReader();
+    reader.onloadend = function() {
+        afterConvertedBase64(reader.result);
+    }
+    reader.readAsDataURL(file);
+
+})
+
 
 function afterFindUser(userJson) {
     let user = JSON.parse(userJson);
@@ -16,13 +42,13 @@ function afterFindUser(userJson) {
     let name = user.name;
     let surname = user.surname;
     let email = user.email;
-    let profilePhoto = JSON.parse(user.profilePhoto);
-    document.querySelector('#profilePic').src = "data:image/jpeg;base64," + profilePhoto;
+    let profilePhoto = user.profilePhoto;
+    document.querySelector('#profilePic').src = "data:image/png;base64," + profilePhoto;
     document.querySelector("#username").innerHTML = name;
 
     document.querySelector('#emailInfo').innerHTML = email;
     document.querySelector('#usernameInfo').innerHTML = name + " " + surname;
-    document.querySelector('#profilePicInfo').src = "data:image/jpeg;base64," + profilePhoto;
+    document.querySelector('#profilePicInfo').src = "data:image/png;base64," + profilePhoto;
     getData(id);
 
 }
@@ -61,5 +87,20 @@ async function getUser(token) {
     await response.text().then(user => {
         afterFindUser(user);
     });
+
+}
+
+
+async function changeProfilePic(img, token) {
+    await fetch(
+        `http://localhost:9000/changeProfilePic`, {
+            method: 'POST',
+            headers: {
+                'token': token
+            },
+            body: img
+        }
+    );
+    location.reload();
 
 }

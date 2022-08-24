@@ -5,7 +5,7 @@
     margin: 10% auto;
 }
 
-.password-mismatching-feedback{
+.password-mismatching-feedback {
     display: none;
     width: 100%;
     margin-top: 0.25rem;
@@ -13,9 +13,15 @@
     color: #dc3545;
 }
 
-.my-alert{
+.my-alert {
     background: #63322e!important;
     padding: 10px 0;
     border-radius: 5px;
     display: none;
+}
+
+header {
+    position: fixed;
+    width: 100%;
+    background: #fff;
 }
