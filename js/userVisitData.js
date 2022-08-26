@@ -1,7 +1,25 @@
 let signOutBtn = document.getElementById('signOut');
+let chatBtn = document.getElementById('chatBtn');
+let addFriendBtn = document.getElementById('addFriendBtn');
+let rmvFriendRequestBtn = document.getElementById('rmvFriendRequestBtn');
+let userId;
+let visitedUserId;
+
 window.addEventListener('load', init);
+chatBtn.addEventListener('click', chatBtnClicked);
+addFriendBtn.addEventListener('click', addFriendBtnClicked);
+rmvFriendRequestBtn.addEventListener('click', rmvFriendRequestBtnClicked);
 
 
+function chatBtnClicked() {}
+
+function addFriendBtnClicked() {
+    sendFriendRequest(userId, visitedUserId);
+}
+
+function rmvFriendRequestBtnClicked() {
+    sendRemoveRequestSend(userId, visitedUserId);
+}
 
 
 
@@ -11,7 +29,6 @@ function init() {
     getUser(token);
     getUserForHeader(userToken)
 }
-
 
 
 signOutBtn.addEventListener('click', signOutBtnClicked)
@@ -24,24 +41,31 @@ function signOutBtnClicked() {
 
 
 
+function afterFriendRequestSent() {
+    document.querySelector('#addFriendBtn').classList.add('d-none');
+    document.querySelector('#rmvFriendRequestBtn').classList.remove('d-none');
+}
+
+function afterRemoveFriendRequest() {
+    document.querySelector('#addFriendBtn').classList.remove('d-none');
+    document.querySelector('#rmvFriendRequestBtn').classList.add('d-none');
+}
+
 
 
 
 function afterFindUser(userJson) {
     let user = JSON.parse(userJson);
-    let id = user.id;
+    visitedUserId = user.id;
     let name = user.name;
     let surname = user.surname;
     let email = user.email;
     let profilePhoto = user.profilePhoto;
-    document.querySelector('#profilePic').src = "data:image/png;base64," + profilePhoto;
-    document.querySelector("#username").innerHTML = name;
 
     document.querySelector('#emailInfo').innerHTML = email;
     document.querySelector('#usernameInfo').innerHTML = name + " " + surname;
     document.querySelector('#profilePicInfo').src = "data:image/png;base64," + profilePhoto;
-    getData(id);
-
+    getData(visitedUserId);
 }
 
 
@@ -52,6 +76,7 @@ function afterFindUserHeader(userJson) {
     let profilePhoto = user.profilePhoto;
     document.querySelector('#profilePic').src = "data:image/png;base64," + profilePhoto;
     document.querySelector("#username").innerHTML = name;
+    userId = user.id;
 }
 
 
@@ -92,9 +117,23 @@ async function getUser(token) {
 
 }
 
+function sendRemoveRequestSend(userId, visitedUserId) {
+    //continue
 
 
+    afterRemoveFriendRequest();
+}
 
+
+async function sendFriendRequest(userId, visitedUserId) {
+    await fetch(
+        `http://localhost:9000/sendFriendRequest?userId=${userId}&requestId=${visitedUserId}`, {
+            method: 'GET'
+        }
+    );
+    afterFriendRequestSent();
+
+}
 
 async function getUserForHeader(token) {
     const response = await fetch(
