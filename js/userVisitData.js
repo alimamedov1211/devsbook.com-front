@@ -2,23 +2,61 @@ let signOutBtn = document.getElementById('signOut');
 let chatBtn = document.getElementById('chatBtn');
 let addFriendBtn = document.getElementById('addFriendBtn');
 let rmvFriendRequestBtn = document.getElementById('rmvFriendRequestBtn');
+let rmvFriendBtn = document.getElementById('rmvFriendBtn');
+let acceptFriendRequestBtn = document.getElementById('acceptFriendRequestBtn');
+
+
+
 let userId;
 let visitedUserId;
+var globFriend;
+var list;
 
 window.addEventListener('load', init);
 chatBtn.addEventListener('click', chatBtnClicked);
 addFriendBtn.addEventListener('click', addFriendBtnClicked);
 rmvFriendRequestBtn.addEventListener('click', rmvFriendRequestBtnClicked);
+rmvFriendBtn.addEventListener('click', rmvFriendBtnClicked);
+acceptFriendRequestBtn.addEventListener('click', acceptFriendRequestBtnClicked);
 
 
-function chatBtnClicked() {}
+function chatBtnClicked() {
+    console.log("salam");
+
+    //continue
+}
 
 function addFriendBtnClicked() {
-    sendFriendRequest(userId, visitedUserId);
+    let user = JSON.parse(globFriend);
+    let requests = user.myRequestsId;
+    if (requests == null) {
+        user.myRequestsId = "" + visitedUserId;
+    } else if (requests.indexOf(visitedUserId) == -1) {
+        user.myRequestsId += `,${visitedUserId}`
+    }
+    updateFriend(user);
+
 }
 
 function rmvFriendRequestBtnClicked() {
-    sendRemoveRequestSend(userId, visitedUserId);
+    let user = JSON.parse(globFriend);
+    let requests = user.myRequestsId;
+    if (requests != null) {
+        let index = requests.indexOf(visitedUserId);
+        if (index != -1) {
+            console.log(index);
+        }
+    }
+    updateFriend(user);
+}
+
+
+function rmvFriendBtnClicked() {
+
+}
+
+function acceptFriendRequestBtnClicked() {
+
 }
 
 
@@ -40,16 +78,6 @@ function signOutBtnClicked() {
 
 
 
-
-function afterFriendRequestSent() {
-    document.querySelector('#addFriendBtn').classList.add('d-none');
-    document.querySelector('#rmvFriendRequestBtn').classList.remove('d-none');
-}
-
-function afterRemoveFriendRequest() {
-    document.querySelector('#addFriendBtn').classList.remove('d-none');
-    document.querySelector('#rmvFriendRequestBtn').classList.add('d-none');
-}
 
 
 
@@ -77,6 +105,24 @@ function afterFindUserHeader(userJson) {
     document.querySelector('#profilePic').src = "data:image/png;base64," + profilePhoto;
     document.querySelector("#username").innerHTML = name;
     userId = user.id;
+    getFriend(userId);
+}
+
+
+function afterFindFriend(friend) {
+    globFriend = friend;
+    let user = JSON.parse(friend);
+    if (checkFrendship(user)) {
+        drawFriendInfo(1);
+    } else if (checkRequest(user)) {
+        drawFriendInfo(2);
+    } else if (checkRequestTo(user)) {
+        drawFriendInfo(3);
+    } else {
+        drawFriendInfo(4);
+    }
+
+
 }
 
 
@@ -92,7 +138,61 @@ function afterGetDatas(userDataJson) {
     postsCount.innerHTML = userData.postsCount
 }
 
+function checkFrendship(user) {
+    return checkExist(user.friendsId);
+}
 
+function checkRequest(user) {
+    return checkExist(user.myRequestsId);
+}
+
+function checkRequestTo(user) {
+    return checkExist(user.friendRequestsId);
+}
+
+function drawFriendInfo(value) {
+    switch (value) {
+        case 1:
+            rmvFriendBtn.classList.remove('d-none');
+            rmvFriendRequestBtn.classList.contains('d-none') ? "" : rmvFriendRequestBtn.classList.add('d-none')
+            addFriendBtn.classList.contains('d-none') ? "" : addFriendBtn.classList.add('d-none')
+            acceptFriendRequestBtn.classList.contains('d-none') ? "" : acceptFriendRequestBtn.classList.add('d-none')
+            break;
+        case 2:
+            rmvFriendRequestBtn.classList.remove('d-none');
+            rmvFriendBtn.classList.contains('d-none') ? "" : rmvFriendBtn.classList.add('d-none')
+            addFriendBtn.classList.contains('d-none') ? "" : addFriendBtn.classList.add('d-none')
+            acceptFriendRequestBtn.classList.contains('d-none') ? "" : acceptFriendRequestBtn.classList.add('d-none')
+            break;
+        case 3:
+            acceptFriendRequestBtn.classList.remove('d-none');
+            rmvFriendRequestBtn.classList.contains('d-none') ? "" : rmvFriendRequestBtn.classList.add('d-none')
+            addFriendBtn.classList.contains('d-none') ? "" : addFriendBtn.classList.add('d-none')
+            rmvFriendBtn.classList.contains('d-none') ? "" : rmvFriendBtn.classList.add('d-none')
+            break;
+        case 4:
+            addFriendBtn.classList.remove('d-none');
+            rmvFriendRequestBtn.classList.contains('d-none') ? "" : rmvFriendRequestBtn.classList.add('d-none')
+            rmvFriendBtn.classList.contains('d-none') ? "" : rmvFriendBtn.classList.add('d-none')
+            acceptFriendRequestBtn.classList.contains('d-none') ? "" : acceptFriendRequestBtn.classList.add('d-none')
+            break;
+    }
+}
+
+
+function checkExist(idList) {
+    list = idList;
+    if (idList != null) {
+        let check = idList.indexOf(visitedUserId);
+        if (check == -1) {
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
 
 async function getData(userId) {
     const response = await fetch(
@@ -117,21 +217,23 @@ async function getUser(token) {
 
 }
 
-function sendRemoveRequestSend(userId, visitedUserId) {
-    //continue
 
+async function updateFriend(friend) {
+    const response = await fetch(
+        `http://localhost:9000/updateFriend`, {
+            method: 'POST',
 
-    afterRemoveFriendRequest();
-}
-
-
-async function sendFriendRequest(userId, visitedUserId) {
-    await fetch(
-        `http://localhost:9000/sendFriendRequest?userId=${userId}&requestId=${visitedUserId}`, {
-            method: 'GET'
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(friend)
         }
     );
-    afterFriendRequestSent();
+
+    await response.text().then(user => {
+        afterFindFriend(user);
+    });
+
 
 }
 
@@ -145,4 +247,15 @@ async function getUserForHeader(token) {
         afterFindUserHeader(user);
     });
 
+}
+
+async function getFriend(userId) {
+    const response = await fetch(
+        `http://localhost:9000/getFriend?userId=${userId}`, {
+            method: 'GET'
+        }
+    );
+    await response.text().then(friend => {
+        afterFindFriend(friend);
+    });
 }
